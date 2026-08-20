@@ -1,0 +1,578 @@
+<title>Zoho Product Help</title>
+<style>
+/* ── tokens ─────────────────────────────────────────────────────────────── */
+:root{
+  --bg:#ffffff; --bg-2:#f7f7f8; --line:#e5e5e7;
+  --ink:#1f2023; --ink-2:#5d6169; --ink-3:#9297a1;
+  --user-bubble:#f0f1f3;
+  --user:#f0b429;              /* yellow — the person */
+  --agent:#3b82f6;             /* blue  — the agent */
+  --bad:#dc2626;
+  --shadow:0 1px 2px rgba(0,0,0,.06), 0 8px 24px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0e0f11; --bg-2:#17181c; --line:#26282e;
+    --ink:#ececf1; --ink-2:#a8adb8; --ink-3:#6f757f;
+    --user-bubble:#1e2026;
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 8px 28px rgba(0,0,0,.35);
+  }
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font:16px/1.65 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+  display:flex;flex-direction:column;
+}
+
+/* ── top bar ────────────────────────────────────────────────────────────── */
+.top{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 20px;border-bottom:1px solid var(--line);
+  position:sticky;top:0;background:var(--bg);z-index:5;
+}
+.top .name{font-size:.94rem;font-weight:600;letter-spacing:-.01em}
+.top .name small{display:block;font-weight:400;font-size:.76rem;color:var(--ink-3);letter-spacing:0}
+.top .grow{flex:1}
+.chip{
+  font-size:.7rem;padding:3px 9px;border-radius:999px;border:1px solid var(--line);
+  color:var(--ink-3);background:var(--bg-2);white-space:nowrap;
+}
+.chip.on{color:#16a34a;border-color:#16a34a40}
+.chip.off{opacity:.55}
+
+/* ── the orb ────────────────────────────────────────────────────────────── */
+.stage{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:26px 20px 14px;gap:12px;
+}
+.orb-wrap{position:relative;width:132px;height:132px;display:grid;place-items:center}
+/* the halo pulses only while someone is talking */
+.orb-halo{
+  position:absolute;inset:0;border-radius:50%;
+  background:radial-gradient(circle, var(--orb, var(--ink-3)) 0%, transparent 68%);
+  opacity:0;transform:scale(.8);
+  transition:opacity .35s ease, transform .35s ease;
+}
+.orb{
+  width:64px;height:64px;border-radius:50%;
+  background:var(--orb, var(--ink-3));
+  /* scale is the whole point: big while speaking, small while not. Driven from
+     JS via --s so it can follow the actual audio level, not just a class flip. */
+  transform:scale(var(--s,1));
+  transition:background-color .3s ease, transform .12s ease-out, box-shadow .3s ease;
+  box-shadow:0 0 0 0 transparent;
+}
+body.listening{--orb:var(--user)}
+body.talking{--orb:var(--agent)}
+body.listening .orb-halo,body.talking .orb-halo{opacity:.20;transform:scale(1)}
+body.listening .orb{box-shadow:0 0 34px -4px var(--user)}
+body.talking   .orb{box-shadow:0 0 34px -4px var(--agent)}
+.orb-label{font-size:.8rem;color:var(--ink-3);min-height:1.2em;letter-spacing:.01em}
+body.listening .orb-label{color:var(--user)}
+body.talking   .orb-label{color:var(--agent)}
+
+/* ── the thread ─────────────────────────────────────────────────────────── */
+#thread{
+  flex:1;overflow-y:auto;padding:6px 20px 24px;
+  display:flex;flex-direction:column;gap:18px;
+  max-width:46rem;width:100%;margin:0 auto;
+}
+.row{display:flex;gap:12px;align-items:flex-start}
+.row.me{flex-direction:row-reverse}
+.av{
+  flex:0 0 auto;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;
+  font-size:.72rem;font-weight:700;color:#fff;margin-top:2px;
+}
+.row.me .av{background:var(--user);color:#3d2c00}
+.row.bot .av{background:var(--agent)}
+.bubble{
+  padding:11px 15px;border-radius:16px;max-width:min(34rem,80%);
+  overflow-wrap:anywhere;white-space:pre-wrap;
+}
+.row.me .bubble{background:var(--user-bubble);border-bottom-right-radius:5px}
+.row.bot .bubble{background:transparent;padding-left:0;padding-right:0;max-width:100%}
+.bubble.live{color:var(--ink-2)}
+.bubble.live::after{
+  content:"";display:inline-block;width:.5em;height:1em;margin-left:2px;
+  background:currentColor;vertical-align:-.15em;animation:blink 1s step-end infinite;
+}
+@keyframes blink{50%{opacity:0}}
+.bubble.filler{color:var(--ink-3);font-style:italic}
+.bubble.cut::after{content:" ⏹ interrupted";color:var(--bad);font-style:normal;font-size:.76rem}
+.note{
+  font-size:.76rem;color:var(--ink-3);margin-top:5px;
+}
+.note b{color:var(--ink-2);font-weight:500}
+.empty{margin:auto;text-align:center;color:var(--ink-3);max-width:26rem}
+.empty h2{font-size:1.32rem;font-weight:600;color:var(--ink);margin:0 0 8px;letter-spacing:-.015em}
+.empty p{margin:0 0 20px;font-size:.92rem}
+.sugg{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.sugg button{
+  font:inherit;font-size:.84rem;padding:8px 13px;border-radius:999px;cursor:pointer;
+  background:var(--bg-2);border:1px solid var(--line);color:var(--ink-2);
+}
+.sugg button:hover{border-color:var(--ink-3);color:var(--ink)}
+
+/* ── composer ───────────────────────────────────────────────────────────── */
+.composer-wrap{
+  border-top:1px solid var(--line);background:var(--bg);
+  padding:12px 20px 16px;position:sticky;bottom:0;
+}
+.composer{
+  max-width:46rem;margin:0 auto;display:flex;align-items:flex-end;gap:8px;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:22px;
+  padding:6px 6px 6px 16px;box-shadow:var(--shadow);
+}
+.composer textarea{
+  flex:1;border:0;background:transparent;color:var(--ink);font:inherit;font-size:.96rem;
+  resize:none;max-height:9rem;padding:7px 0;outline:none;line-height:1.5;
+}
+.iconbtn{
+  flex:0 0 auto;width:36px;height:36px;border-radius:50%;border:0;cursor:pointer;
+  display:grid;place-items:center;font-size:1rem;background:transparent;color:var(--ink-2);
+}
+.iconbtn:hover{background:var(--line)}
+.iconbtn.mic.on{background:var(--user);color:#3d2c00}
+.iconbtn.send{background:var(--ink);color:var(--bg)}
+.iconbtn.send:disabled{opacity:.3;cursor:default;background:var(--line);color:var(--ink-3)}
+.iconbtn.stop{background:var(--bad);color:#fff}
+.hint{max-width:46rem;margin:7px auto 0;font-size:.72rem;color:var(--ink-3);text-align:center}
+
+/* ── details drawer ─────────────────────────────────────────────────────── */
+details.dev{max-width:46rem;margin:0 auto;font-size:.78rem}
+details.dev summary{cursor:pointer;color:var(--ink-3);padding:4px 0;list-style:none}
+details.dev summary::-webkit-details-marker{display:none}
+details.dev summary:before{content:"▸ ";}
+details.dev[open] summary:before{content:"▾ ";}
+.stats{display:flex;flex-wrap:wrap;gap:14px;color:var(--ink-3);padding:6px 0 8px}
+.stats b{color:var(--ink-2);font-variant-numeric:tabular-nums}
+#log{
+  font:11.5px/1.55 ui-monospace,SFMono-Regular,Menlo,monospace;max-height:170px;overflow:auto;
+  background:var(--bg-2);border:1px solid var(--line);border-radius:9px;padding:8px;
+}
+#log .t{color:var(--ink-3);margin-right:7px}
+.ev-sys{color:var(--ink-3)}.ev-you{color:#b7860b}.ev-rag{color:var(--agent)}
+.ev-mark{color:var(--bad)}.ev-fill{color:#8b5cf6}
+</style>
+
+<div class="top">
+  <div class="name">Zoho Product Help<small>answers from the product documentation</small></div>
+  <div class="grow"></div>
+  <span class="chip off" id="cConn">offline</span>
+  <span class="chip off" id="cColl">—</span>
+</div>
+
+<div class="stage">
+  <div class="orb-wrap">
+    <div class="orb-halo"></div>
+    <div class="orb" id="orb"></div>
+  </div>
+  <div class="orb-label" id="orbLabel">Tap the mic and just ask</div>
+</div>
+
+<div id="thread">
+  <div class="empty" id="empty">
+    <h2>What can I help you with?</h2>
+    <p>Ask about any Zoho product — out loud or typed.</p>
+    <div class="sugg" id="sugg"></div>
+  </div>
+</div>
+
+<div class="composer-wrap">
+  <div class="composer">
+    <textarea id="q" rows="1" placeholder="Ask anything about Zoho…"></textarea>
+    <button class="iconbtn mic" id="btnMic" title="Talk">🎙</button>
+    <button class="iconbtn send" id="btnSend" disabled title="Send">↑</button>
+  </div>
+  <div class="hint" id="hint">Enter to send · mic stays open so you can interrupt mid-answer</div>
+  <details class="dev">
+    <summary>pipeline</summary>
+    <div class="stats">
+      <span>name repair <b id="tCorr">—</b></span>
+      <span>retrieval <b id="tRag">—</b></span>
+      <span>first audio <b id="tAudio">—</b></span>
+      <span>spoken <b id="tTotal">—</b></span>
+    </div>
+    <div id="log"></div>
+  </details>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const CHUNK = 1920;            // 80 ms @ 24 kHz — matches the server's chunking
+const RATE  = 24000;
+
+let ws=null, ac=null, media=null, running=false, workletUrl=null;
+// Set by the server's end_call event. The hangup waits for the farewell to
+// finish playing — cutting the audio to hang up faster would talk over the
+// goodbye the server just generated for exactly this moment.
+let pendingHangup=false, hangupTimer=null;
+let botBubble=null, liveBubble=null, t0=0, firstAudio=null;
+
+const SUGGESTIONS = [
+  "What is SalesInbox?",
+  "How do I create a workflow rule?",
+  "How do I submit an expense report?",
+  "How do I send mass emails?",
+];
+
+/* ── orb ──────────────────────────────────────────────────────────────────
+   Two independent inputs drive one circle: the VAD frame level while the user
+   talks, and the audio level of what we are playing while the agent talks. The
+   agent wins when both are true, because that is the state the listener is in.  */
+let orbLevel=0, orbDecay=null;
+function setOrb(state, label){
+  document.body.classList.toggle("listening", state==="listening");
+  document.body.classList.toggle("talking",  state==="talking");
+  if(label!==undefined) $("#orbLabel").textContent=label;
+  if(state==="idle"){ orbLevel=0; applyOrb(); }
+}
+function pushLevel(v){                       // 0..1
+  orbLevel = Math.max(orbLevel*0.72, Math.min(1, v));
+  applyOrb();
+  clearTimeout(orbDecay);
+  orbDecay = setTimeout(()=>{ orbLevel*=0.4; applyOrb(); }, 220);
+}
+function applyOrb(){
+  // 1.0 small at rest, up to ~2.05 at full voice. Non-linear so ordinary speech
+  // already looks alive rather than only shouting.
+  const s = 1 + Math.pow(orbLevel,0.7)*1.05;
+  $("#orb").style.setProperty("--s", s.toFixed(3));
+}
+
+/* ── thread ─────────────────────────────────────────────────────────────── */
+function killEmpty(){ const e=$("#empty"); if(e) e.remove(); }
+function addRow(who, text, cls){
+  killEmpty();
+  const row=document.createElement("div");
+  row.className="row "+(who==="me"?"me":"bot");
+  const av=document.createElement("div"); av.className="av";
+  av.textContent = who==="me" ? "You" : "Z";
+  const b=document.createElement("div"); b.className="bubble"+(cls?" "+cls:"");
+  b.textContent=text||"";
+  row.appendChild(av); row.appendChild(b);
+  $("#thread").appendChild(row);
+  scrollDown();
+  return b;
+}
+function scrollDown(){ const t=$("#thread"); t.scrollTop=t.scrollHeight; }
+function addNote(bubble, html){
+  const n=document.createElement("div"); n.className="note"; n.innerHTML=html;
+  bubble.parentElement.insertAdjacentElement("afterend", n);
+  scrollDown();
+}
+
+function logLine(cls,text){
+  const el=$("#log");
+  const at=(performance.now()/1000).toFixed(2).padStart(7," ");
+  const d=document.createElement("div");
+  const t=document.createElement("span"); t.className="t"; t.textContent=at+"s";
+  const s=document.createElement("span"); s.className=cls; s.textContent=text;
+  d.appendChild(t); d.appendChild(s); el.appendChild(d);
+  while(el.children.length>200) el.removeChild(el.firstChild);
+  el.scrollTop=el.scrollHeight;
+}
+
+/* ── audio out + echo cancellation ──────────────────────────────────────── */
+let pctx=null, nextAt=0, sources=[], aecSink=null, aecPC=[], aecEl=null;
+function playCtx(){
+  if(!pctx){ pctx=new AudioContext({sampleRate:24000}); setupAec(pctx); }
+  if(pctx.state==="suspended") pctx.resume();
+  return pctx;
+}
+// Barge-in on speakers only works if the browser's echo canceller can see what
+// we play. WebAudio output straight to destination is invisible to it, so
+// playback is routed through a loopback RTCPeerConnection into an <audio>
+// element — it never leaves the machine, the round trip exists purely so Chrome
+// tags it as WebRTC output and subtracts it from the mic.
+async function setupAec(ctx){
+  try{
+    const dest=ctx.createMediaStreamDestination();
+    const pcOut=new RTCPeerConnection(), pcIn=new RTCPeerConnection();
+    pcOut.onicecandidate=e=>e.candidate&&pcIn.addIceCandidate(e.candidate);
+    pcIn.onicecandidate=e=>e.candidate&&pcOut.addIceCandidate(e.candidate);
+    const inbound=new Promise(res=>{ pcIn.ontrack=e=>res(e.streams[0]); });
+    dest.stream.getAudioTracks().forEach(t=>pcOut.addTrack(t,dest.stream));
+    const offer=await pcOut.createOffer();
+    await pcOut.setLocalDescription(offer); await pcIn.setRemoteDescription(offer);
+    const answer=await pcIn.createAnswer();
+    await pcIn.setLocalDescription(answer); await pcOut.setRemoteDescription(answer);
+    const stream=await inbound;
+    if(!aecEl){ aecEl=document.createElement("audio"); aecEl.autoplay=true; document.body.appendChild(aecEl); }
+    aecEl.srcObject=stream; await aecEl.play().catch(()=>{});
+    aecSink=dest; aecPC=[pcOut,pcIn];
+    logLine("ev-sys","echo cancellation active — you can interrupt on speakers");
+  }catch(e){
+    logLine("ev-mark","echo cancellation unavailable — use headphones");
+    aecSink=null;
+  }
+}
+function enqueue(buf){
+  const ctx=playCtx();
+  if(buf.byteLength<4) return;
+  const dv=new DataView(buf); const len=dv.getUint32(0,true);
+  if(len===0 || 4+len>buf.byteLength) return;
+  const pcm=new Int16Array(buf,4,len/2);
+  const ab=ctx.createBuffer(1,pcm.length,24000);
+  const ch=ab.getChannelData(0);
+  let peak=0;
+  for(let i=0;i<pcm.length;i++){ const v=pcm[i]/32768; ch[i]=v; const a=v<0?-v:v; if(a>peak)peak=a; }
+  const src=ctx.createBufferSource(); src.buffer=ab;
+  src.connect(aecSink ? aecSink : ctx.destination);
+  const now=ctx.currentTime;
+  if(nextAt < now+0.02) nextAt = now+0.02;
+  // Drive the orb from when this chunk is actually AUDIBLE, not when it arrives —
+  // synthesis now runs ahead of playback, so arrival time is meaningless.
+  const delay=Math.max(0,(nextAt-now)*1000);
+  setTimeout(()=>{ if(sources.length) pushLevel(peak*1.6); }, delay);
+  src.start(nextAt); nextAt += ab.duration;
+  sources.push(src);
+  if(firstAudio===null && t0){ firstAudio=performance.now()-t0; $("#tAudio").textContent=Math.round(firstAudio)+"ms"; }
+  if(sources.length===1){ setOrb("talking","Speaking…"); send({type:"playback_started"}); }
+  src.onended=()=>{
+    const i=sources.indexOf(src); if(i>=0) sources.splice(i,1);
+    if(!sources.length){
+      setOrb("idle", running?"Listening":"Tap the mic and just ask");
+      send({type:"playback_ended"});
+      if(pendingHangup) hangUp();
+    }
+  };
+}
+function flushAudio(){
+  // Cancel any pending hangup FIRST. stop() fires onended, which would see an
+  // empty queue and hang up — so a barge-in over the farewell would end the call
+  // instead of interrupting it, the exact opposite of what the caller asked for.
+  pendingHangup=false;
+  if(hangupTimer){ clearTimeout(hangupTimer); hangupTimer=null; }
+  sources.forEach(s=>{ try{s.stop();}catch(e){} });
+  sources=[]; nextAt=0; setOrb("idle", running?"Listening":"Tap the mic and just ask");
+  if(botBubble) botBubble.classList.add("cut");
+}
+function send(o){ if(ws && ws.readyState===1) ws.send(JSON.stringify(o)); }
+
+/* ── mic ────────────────────────────────────────────────────────────────── */
+const WORKLET = `class P extends AudioWorkletProcessor{
+  constructor(){super();this.b=new Float32Array(0);this.c=${CHUNK};}
+  process(i){const x=i[0][0];if(!x)return true;
+    const c=new Float32Array(this.b.length+x.length);c.set(this.b);c.set(x,this.b.length);
+    let o=0;
+    while(c.length-o>=this.c){const ch=c.slice(o,o+this.c);o+=this.c;
+      const p=new Int16Array(ch.length);
+      for(let k=0;k<ch.length;k++){const s=Math.max(-1,Math.min(1,ch[k]));p[k]=s<0?s*0x8000:s*0x7FFF;}
+      this.port.postMessage(p.buffer,[p.buffer]);}
+    this.b=c.slice(o);return true;}}
+registerProcessor('cap',P);`;
+
+async function startMic(){
+  if(running) return;
+  try{
+    media = await navigator.mediaDevices.getUserMedia({audio:{
+      echoCancellation:true, noiseSuppression:false, autoGainControl:true,
+      sampleRate:RATE, channelCount:1}});
+  }catch(e){
+    logLine("ev-mark","microphone blocked: "+e.message);
+    $("#orbLabel").textContent="Microphone blocked — needs https + permission";
+    return;
+  }
+  playCtx();   // create the audio graph (and AEC) on the user gesture
+  const proto = location.protocol==="https:" ? "wss:" : "ws:";
+  ws = new WebSocket(`${proto}//${location.host}/ws`);
+  ws.binaryType="arraybuffer";
+
+  ws.onopen = async () => {
+    $("#cConn").textContent="live"; $("#cConn").className="chip on";
+    ac = new AudioContext({sampleRate:RATE});
+    const src = ac.createMediaStreamSource(media);
+    if(!workletUrl) workletUrl=URL.createObjectURL(new Blob([WORKLET],{type:"application/javascript"}));
+    await ac.audioWorklet.addModule(workletUrl);
+    const node = new AudioWorkletNode(ac,"cap");
+    node.port.onmessage = e => { if(running && ws && ws.readyState===1) ws.send(e.data); };
+    src.connect(node);   // deliberately NOT to ac.destination
+    running=true; pendingHangup=false;
+    if(hangupTimer){ clearTimeout(hangupTimer); hangupTimer=null; }
+    $("#btnMic").classList.add("on");
+    setOrb("idle","Listening");
+    logLine("ev-sys","mic open @ "+RATE+" Hz");
+  };
+  ws.onmessage = ev => {
+    if(ev.data instanceof ArrayBuffer){ enqueue(ev.data); return; }
+    let m; try{ m=JSON.parse(ev.data); }catch(e){ return; }
+    handle(m);
+  };
+  ws.onclose = () => {
+    $("#cConn").textContent="offline"; $("#cConn").className="chip off";
+    running=false; $("#btnMic").classList.remove("on");
+    setOrb("idle","Tap the mic and just ask");
+  };
+}
+function hangUp(){
+  if(!pendingHangup) return;
+  pendingHangup=false;
+  if(hangupTimer){ clearTimeout(hangupTimer); hangupTimer=null; }
+  // A barge-in during the farewell cancels the hangup: the caller had something
+  // more to say, which is the whole reason barge-in exists.
+  if(!running) return;
+  stopMic();
+  setOrb("idle","Call ended — tap the mic to start again");
+}
+function stopMic(){
+  running=false;
+  // Drop any queued audio. Without this, chunks that were already in flight when
+  // the call ended stay in `sources`, and the mic button's first branch
+  // (interrupt-if-playing) swallows the next tap instead of restarting — the
+  // call looks dead until you tap twice.
+  sources.forEach(x=>{ try{x.stop();}catch(e){} });
+  sources=[]; nextAt=0;
+  try{ if(ws) ws.close(); }catch(e){}
+  try{ if(ac) ac.close(); }catch(e){}
+  try{ if(media) media.getTracks().forEach(t=>t.stop()); }catch(e){}
+  ac=null; media=null;
+  $("#btnMic").classList.remove("on");
+  setOrb("idle","Tap the mic and just ask");
+}
+
+/* ── events ─────────────────────────────────────────────────────────────── */
+function newTurn(){
+  botBubble=null; firstAudio=null; t0=performance.now();
+  $("#tCorr").textContent="—"; $("#tRag").textContent="—";
+  $("#tAudio").textContent="—"; $("#tTotal").textContent="—";
+}
+
+function handle(m){
+  switch(m.type){
+    case "ready":
+      $("#cColl").textContent=m.collection||"—"; $("#cColl").className="chip";
+      logLine("ev-sys",`ready — stt=${m.stt} 2nd=${m.accurate} turn=${m.turn} tts=${m.tts} echo=${m.echo_mode}`);
+      break;
+
+    case "tick": {
+      const f=m.frames||[];
+      const lvl=f.length?Math.max(...f):0;
+      if(m.in_speech){
+        if(!sources.length) setOrb("listening","Listening…");
+        pushLevel(lvl);
+      }
+      if(m.partial){
+        if(!liveBubble) liveBubble=addRow("me","","live");
+        liveBubble.textContent=m.partial;
+        scrollDown();
+      }
+      break;
+    }
+
+    case "stt_partial":
+      if(!liveBubble) liveBubble=addRow("me","","live");
+      liveBubble.textContent=m.text; scrollDown();
+      break;
+
+    case "user_text":
+      if(liveBubble){ liveBubble.classList.remove("live"); liveBubble.textContent=m.text; }
+      else addRow("me", m.text);
+      liveBubble=null;
+      newTurn();
+      break;
+
+    case "query_corrected":
+      $("#tCorr").textContent=m.ms+"ms";
+      logLine("ev-rag",`product name repaired: ${m.heard} → ${m.query}`);
+      break;
+
+    case "rag_start": logLine("ev-rag",`searching ${m.collection}: ${m.query}`); break;
+
+    case "filler":
+      logLine("ev-fill",`covering the wait: ${m.text}`);
+      break;
+
+    case "rag_reset":
+      logLine("ev-mark","discarded reasoning text");
+      if(botBubble){ botBubble.textContent=""; }
+      break;
+
+    case "assistant_text_start":
+      // Create the bubble before any text exists, so it appears the moment the
+      // question lands rather than popping in later and shifting the thread.
+      if(!botBubble) botBubble=addRow("bot","");
+      break;
+
+    case "assistant_text_delta":
+      if(!botBubble) botBubble=addRow("bot","");
+      botBubble.textContent += m.text;
+      scrollDown();
+      break;
+
+    case "assistant_text_done":
+      $("#tTotal").textContent=m.total_ms+"ms";
+      break;
+
+    case "rag_done":
+      $("#tRag").textContent = m.ttft_ms ? m.ttft_ms+"ms" : "—";
+      logLine("ev-rag",`answer complete — ttft ${m.ttft_ms}ms, ${m.chars} chars`);
+      break;
+
+    case "end_call":
+      // The server sends this as soon as the answer TEXT has finished streaming
+      // — TTS is usually still synthesising, so the audio queue is empty right
+      // now and will fill a moment later. Hanging up on an empty queue here was
+      // wrong: it cut the farewell off mid-word and tore the session down while
+      // the reply was still being generated, which looks exactly like a freeze.
+      //
+      // So arm a fallback instead. The normal path is the queue draining in
+      // src.onended below; this timer only fires if no audio ever arrives.
+      pendingHangup=true;
+      setOrb("talking","Wrapping up…");
+      logLine("ev-mark","call ending");
+      if(hangupTimer) clearTimeout(hangupTimer);
+      hangupTimer=setTimeout(()=>{
+        if(pendingHangup && !sources.length) hangUp();
+      }, 4000);
+      break;
+    case "interrupt":
+      flushAudio();
+      logLine("ev-mark","interrupted ("+(m.reason||"")+")");
+      break;
+
+    case "start":  logLine("ev-you",`speech start (onset lag ${m.onset_lag_ms}ms)`); break;
+    case "pause":  logLine("ev-you","pause"); break;
+    case "final":  logLine("ev-you",`turn end (${m.reason})`); break;
+    case "abandoned": logLine("ev-mark",`ignored — ${m.speech_ms}ms of sound, no words`); break;
+    case "echo_dropped": logLine("ev-mark","ignored own voice"); break;
+    case "accurate_transcript":
+      logLine("ev-sys",`2nd pass ${m.ms}ms sim=${m.similarity}`+(m.both_sent?" (both kept)":""));
+      break;
+  }
+}
+
+/* ── composer ───────────────────────────────────────────────────────────── */
+function ask(q){
+  q=(q||"").trim(); if(!q) return;
+  if(!ws || ws.readyState!==1){
+    logLine("ev-mark","not connected — tap the mic first");
+    $("#orbLabel").textContent="Tap the mic to connect";
+    return;
+  }
+  killEmpty();
+  addRow("me", q);
+  newTurn();
+  send({type:"ask", text:q});
+  $("#q").value=""; autosize(); $("#btnSend").disabled=true;
+}
+function autosize(){
+  const t=$("#q"); t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,144)+"px";
+}
+SUGGESTIONS.forEach(s=>{
+  const b=document.createElement("button"); b.textContent=s;
+  b.onclick=()=>ask(s); $("#sugg").appendChild(b);
+});
+$("#q").addEventListener("input",()=>{ autosize(); $("#btnSend").disabled=!$("#q").value.trim(); });
+$("#q").addEventListener("keydown",e=>{
+  if(e.key==="Enter" && !e.shiftKey){ e.preventDefault(); ask($("#q").value); }
+});
+$("#btnSend").onclick=()=>ask($("#q").value);
+$("#btnMic").onclick=()=>{
+  if(sources.length){ flushAudio(); send({type:"interrupt"}); return; }
+  running ? stopMic() : startMic();
+};
+applyOrb();
+</script>

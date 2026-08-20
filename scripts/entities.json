@@ -1,0 +1,224 @@
+[
+  {
+    "file": "recordings/capture-20260813-105609.mic.wav",
+    "start": 67.9,
+    "end": 93.4,
+    "entities": [
+      "Coimbatore",
+      "Chennai"
+    ],
+    "heard": {
+      "Coimbatore": "Koyambatur"
+    },
+    "note": "speaker repeats the city twice after being misheard"
+  },
+  {
+    "file": "recordings/agent-20260814-181647.mic.wav",
+    "start": 76.5,
+    "end": 93.6,
+    "entities": [
+      "Coimbatore",
+      "Chennai"
+    ],
+    "heard": {
+      "Coimbatore": "Quambatur"
+    },
+    "note": "same city, a third spelling; Chennai lands, Coimbatore does not"
+  },
+  {
+    "file": "recordings/agent-20260814-164301.mic.wav",
+    "start": 6.3,
+    "end": 46.2,
+    "entities": [
+      "Leh Ladakh"
+    ],
+    "heard": {
+      "Leh Ladakh": "Leiladak / Leil Adak"
+    },
+    "note": "speaker corrects the model mid-sentence and is misheard again"
+  },
+  {
+    "file": "recordings/capture-20260816-191429.mic.wav",
+    "start": 67.4,
+    "end": 102.3,
+    "entities": [
+      "Chennai",
+      "Coimbatore",
+      "Tiruppur",
+      "Erode",
+      "Salem",
+      "Madurai",
+      "Tiruchirappalli",
+      "Thanjavur",
+      "Kanyakumari",
+      "Vellore",
+      "Hosur",
+      "Pollachi",
+      "Ooty",
+      "Dindigul",
+      "Sivakasi",
+      "Namakkal",
+      "Kanchipuram",
+      "Pudukkottai",
+      "Ramanathapuram",
+      "Thoothukudi"
+    ],
+    "heard": {
+      "Coimbatore": "Kuwait and Batur",
+      "Erode": "E Road",
+      "Tiruchirappalli": "Tiruchira Palli",
+      "Vellore": "Velur",
+      "Hosur": "Hazor",
+      "Ooty": "Uti",
+      "Dindigul": "Dindakal",
+      "Sivakasi": "Sivagasi",
+      "Namakkal": "Namakal",
+      "Pudukkottai": "Budakotai",
+      "Ramanathapuram": "Ramanadaburam",
+      "Thoothukudi": "Tutukudi",
+      "Pollachi": "Polachi"
+    },
+    "note": "Tamil Nadu cities, read as a list"
+  },
+  {
+    "file": "recordings/capture-20260816-191429.mic.wav",
+    "start": 102.3,
+    "end": 139.0,
+    "entities": [
+      "Thiruvananthapuram",
+      "Visakhapatnam",
+      "Vijayawada",
+      "Hyderabad",
+      "Bengaluru",
+      "Mysuru"
+    ],
+    "heard": {
+      "Thiruvananthapuram": "Tiruvanandapuram",
+      "Visakhapatnam": "Visahapatinam",
+      "Vijayawada": "Vijayavada"
+    },
+    "note": "south Indian cities (1/2)"
+  },
+  {
+    "file": "recordings/capture-20260816-191429.mic.wav",
+    "start": 139.0,
+    "end": 163.3,
+    "entities": [
+      "Kozhikode",
+      "Kochi",
+      "Mangaluru",
+      "Puducherry",
+      "Bhubaneswar",
+      "Guwahati",
+      "Ahmedabad",
+      "Vadodara",
+      "Chandigarh",
+      "Gurugram",
+      "Noida",
+      "Ghaziabad",
+      "Indore",
+      "Jabalpur"
+    ],
+    "heard": {
+      "Kozhikode": "Koli code",
+      "Kochi": "kuchi",
+      "Guwahati": "Guhati",
+      "Ahmedabad": "Akamadapat",
+      "Vadodara": "Vado Dara",
+      "Ghaziabad": "Ghaziabat"
+    },
+    "note": "cities (2/2), north and west"
+  },
+  {
+    "file": "recordings/capture-20260816-191429.mic.wav",
+    "start": 163.3,
+    "end": 186.2,
+    "entities": [
+      "Aravind Kumar",
+      "Karthikeyan",
+      "Vigneshwaran",
+      "Sriram",
+      "Subramanian",
+      "Balasubramaniam",
+      "Raghunathan",
+      "Srinivasan",
+      "Krishnamurthy",
+      "Dhanush Kumar",
+      "Nandini",
+      "Harishankar",
+      "Soundarya",
+      "Aishwarya",
+      "Meenakshi",
+      "Kavitha",
+      "Shanmugapriya"
+    ],
+    "heard": {
+      "Karthikeyan": "Kartikeyan",
+      "Vigneshwaran": "Vikneshwaran",
+      "Sriram": "Sri Ram",
+      "Balasubramaniam": "Bala Subramaniam",
+      "Raghunathan": "Raghunadan",
+      "Srinivasan": "Sri Nivasan",
+      "Krishnamurthy": "Krishna Murti",
+      "Soundarya": "Saundarya",
+      "Aishwarya": "Ayishwarya",
+      "Kavitha": "Kavita",
+      "Shanmugapriya": "Shanmugapria"
+    },
+    "note": "south Indian person names, read as a list"
+  },
+  {
+    "file": "recordings/capture-20260816-191429.mic.wav",
+    "start": 186.2,
+    "end": 204.2,
+    "entities": [
+      "Rahul Sharma",
+      "Aditya Varma",
+      "Rohit Agarwal",
+      "Ankit Mishra",
+      "Priya Nair",
+      "Sneha Reddy",
+      "Neha Kapoor",
+      "Pooja Patel",
+      "Abhishek Singh",
+      "Akash Gupta",
+      "Vivek Menon",
+      "Ananya Iyer"
+    ],
+    "heard": {
+      "Priya Nair": "Priya Nayar",
+      "Neha Kapoor": "Nega Kapoor",
+      "Vivek Menon": "Vivek Mainan",
+      "Ananya Iyer": "Ananya Ayer"
+    },
+    "note": "pan-Indian person names, read as a list"
+  },
+  {
+    "file": "recordings/capture-20260816-191429.mic.wav",
+    "start": 204.2,
+    "end": 232.2,
+    "entities": [
+      "Ravi Kumar",
+      "Chennai",
+      "Priya Iyer",
+      "Kochi",
+      "Tiruppur",
+      "Tamil Nadu",
+      "Zoho Corporation",
+      "Bengaluru",
+      "Hyderabad",
+      "Visakhapatnam",
+      "Andhra Pradesh",
+      "Arun Subramanian",
+      "Coimbatore"
+    ],
+    "heard": {
+      "Priya Iyer": "Priyan Ayer",
+      "Tiruppur": "Tirpur",
+      "Visakhapatnam": "Vishakapatinam",
+      "Arun Subramanian": "Arun Subra Manien",
+      "Coimbatore": "Kimbatur"
+    },
+    "note": "names and places inside real sentences \u2014 the realistic case"
+  }
+]
